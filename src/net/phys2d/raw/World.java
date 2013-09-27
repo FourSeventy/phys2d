@@ -41,6 +41,7 @@
 package net.phys2d.raw;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import net.phys2d.math.Vector2f;
 import net.phys2d.raw.forcesource.ForceSource;
@@ -186,9 +187,9 @@ public strictfp class World extends CollisionSpace {
 	 * 
 	 * @return The list of arbiters
 	 */
-	public ArbiterList getArbiters() {
-		return arbiters;
-	}
+//	public ArbiterList getArbiters() {
+//		return arbiters;
+//	}
 	
 	/**
 	 * Clear any arbiters in place for the given body
@@ -197,30 +198,35 @@ public strictfp class World extends CollisionSpace {
 	 */
 	public void clearArbiters(Body b) 
         {
-            for (int i=0;i<arbiters.size();i++) 
-            {
-                if (arbiters.get(i).concerns(b)) 
-                {
-                    //notify seperate on any touching bodies
-                    this.notifySeparation(arbiters.get(i).getBody1(), arbiters.get(i).getBody2()); 
-                    
-                    //remove arbiters from the list
-                    arbiters.remove(arbiters.get(i));
-                    i--;
-                }
-            }
-            for (int j=0;j<overlapList.size();j++) 
-            {
-                if (overlapList.get(j).concerns(b)) 
-                {
-                    //notify seperate on any touching bodies
-                    this.notifySeparation(overlapList.get(j).getBody1(), overlapList.get(j).getBody2());
-                    
-                    //remove from list
-                    overlapList.remove(overlapList.get(j));
-                    j--;
-                }
-            }
+              Iterator<Arbiter> it = arbiters.values().iterator();
+              while(it.hasNext())
+              {
+                  Arbiter arb = it.next();
+                  
+                  if(arb.concerns(b))
+                  {
+                      //notify seperate on any touching bodies
+                      this.notifySeparation(arb.getBody1(), arb.getBody2());
+                      
+                      it.remove();
+                  }
+              }
+              
+              it = overlapList.values().iterator();
+              while(it.hasNext())
+              {
+                  Arbiter arb = it.next();
+                  
+                  if(arb.concerns(b))
+                  {
+                      //notify seperate on any touching bodies
+                      this.notifySeparation(arb.getBody1(), arb.getBody2());
+                      
+                      it.remove();
+                  }
+              }
+            
+           
 	}
 	
 	/**
@@ -344,12 +350,13 @@ public strictfp class World extends CollisionSpace {
 			b.adjustAngularVelocity(-b.getAngularVelocity() * b.getInvI() * b.getRotDamping());
 		}
 
-		for (int i=0;i<arbiters.size();i++) {
-			Arbiter arb = arbiters.get(i);
-			if (!restingBodyDetection || !arb.hasRestingPair()) {
-				arb.preStep(invDT, dt, damping);
-			}
-		}
+                for(Arbiter arb: arbiters.values())
+                {
+                    if (!restingBodyDetection || !arb.hasRestingPair()) 
+                    {
+			arb.preStep(invDT, dt, damping);
+	            }
+                }
 
 		for (int i = 0; i < joints.size(); ++i) {
 			Joint j = joints.get(i);
@@ -358,8 +365,8 @@ public strictfp class World extends CollisionSpace {
 
 		for (int i = 0; i < iterations; ++i)
 		{
-			for (int k=0;k<arbiters.size();k++) {
-				Arbiter arb = arbiters.get(k);
+			for (Arbiter arb: arbiters.values())
+                        {
 				if (!restingBodyDetection || !arb.hasRestingPair()) {
 					arb.applyImpulse();
 				} else {
@@ -424,22 +431,29 @@ public strictfp class World extends CollisionSpace {
 	/**
 	 * Clean up the arbiters for departied bodies
 	 */
-	private void cleanUpArbiters() {
-		for (int i=0;i<arbiters.size();i++) {
-			Arbiter arbiter = arbiters.get(i);
-			
-			if (!arbiter.getBody1().added() || !arbiter.getBody2().added()) {
-				arbiters.remove(arbiter);
-				i--;
-			}
-		}
-                for (int j=0;j<overlapList.size();j++) {
-			Arbiter arbiter = overlapList.get(j);
-			if (!arbiter.getBody1().added() || !arbiter.getBody2().added()) {
-				overlapList.remove(arbiter);
-				j--;
-			}
-		}
+	private void cleanUpArbiters()
+        {
+            
+                Iterator<Arbiter> it = arbiters.values().iterator();
+                while(it.hasNext())
+                {
+                    Arbiter arbiter = it.next();
+                    if (!arbiter.getBody1().added() || !arbiter.getBody2().added()) 
+                    {
+			it.remove();
+		    }
+                }
+
+                it = overlapList.values().iterator();
+                while(it.hasNext())
+                {
+                    Arbiter arbiter = it.next();
+                    if (!arbiter.getBody1().added() || !arbiter.getBody2().added()) 
+                    {
+			it.remove();
+		    }
+                }
+
 	}
 	
 	/**
@@ -460,8 +474,8 @@ public strictfp class World extends CollisionSpace {
 	public CollisionEvent[] getContacts(Body body) {
 		ArrayList collisions = new ArrayList();
 		
-		for (int i=0;i<arbiters.size();i++) {
-			Arbiter arb = arbiters.get(i);
+		for (Arbiter arb: arbiters.values()) 
+                {
 			
 			if (arb.concerns(body)) {
 				for (int j=0;j<arb.getNumContacts();j++) {

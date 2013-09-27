@@ -492,4 +492,9 @@ public strictfp class Arbiter {
 		
 		return false;
 	}
+        
+        protected String keyCode()
+        {
+            return String.valueOf(body1.hashCode()) + String.valueOf(body2.hashCode());
+        }
 }

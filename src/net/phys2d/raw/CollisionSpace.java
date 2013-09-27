@@ -1,6 +1,9 @@
 package net.phys2d.raw;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import net.phys2d.math.ROVector2f;
 
 /**
@@ -13,9 +16,9 @@ public class CollisionSpace implements CollisionContext {
 	/** The bodies contained in the world */
 	protected BodyList bodies = new BodyList(); 
 	/** The arbiters that have been required in the world */
-	protected ArbiterList arbiters = new ArbiterList(); 
+	protected LinkedHashMap<String,Arbiter> arbiters = new LinkedHashMap<>(); 
         /** The arbiters that are responsible for bodies that overlap but will not apply impulse to one another */
-        protected ArbiterList overlapList = new ArbiterList();
+        protected LinkedHashMap<String,Arbiter> overlapList = new LinkedHashMap<>();
 	/** The broad phase collision strategy we're using */
 	protected BroadCollisionStrategy collisionStrategy;
 	/** The list of listeners that should be notified of collisions */
@@ -152,21 +155,23 @@ public class CollisionSpace implements CollisionContext {
          * Removes arbiters concerning this body from the physics world
          * @param b 
          */
-        public void nullifyArbiters(Body b){
-            for (int i=0; i<arbiters.size(); i++){
-                Arbiter arb = arbiters.get(i);
-                if (arb.concerns(b)){
-                    arbiters.remove(arb);
-                    i--;
-                }
-            }
-            for (int j=0; j<overlapList.size(); j++){
-                Arbiter arb = overlapList.get(j);
-                if (arb.concerns(b)){
-                    overlapList.remove(arb);
-                    j--;
-                }
-            }
+        public void nullifyArbiters(Body b)
+        {
+              for(Arbiter arb: arbiters.values())
+              {
+                  if(arb.concerns(b))
+                  {
+                      arbiters.remove(arb.keyCode());
+                  }
+              }
+             
+              for(Arbiter arb: overlapList.values())
+              {
+                  if(arb.concerns(b))
+                  {
+                      overlapList.remove(arb.keyCode());
+                  }
+              }
         }
         
 	/**
@@ -215,16 +220,16 @@ public class CollisionSpace implements CollisionContext {
                                     doOverlap = false;
                                 }
 				if (!bi.getShape().getBounds().touches(bi.getPosition().getX(), 
-													   bi.getPosition().getY(), 
-													   bj.getShape().getBounds(), 
-													   bj.getPosition().getX(), 
-													   bj.getPosition().getY())) 
+                                                                        bi.getPosition().getY(), 
+                                                                        bj.getShape().getBounds(), 
+                                                                        bj.getPosition().getX(), 
+                                                                        bj.getPosition().getY())) 
                                 {
                                        //if the objects arnt touching anymore remove the arbiter
                                         boolean removePhysics;
                                         boolean removeOverlap;
-					removePhysics =arbiters.remove(new Arbiter(bi,bj,true));
-                                        removeOverlap =overlapList.remove(new Arbiter(bi,bj,true));
+					removePhysics = arbiters.remove(String.valueOf(bi.hashCode())+String.valueOf(bj.hashCode()))!=null;
+                                        removeOverlap =overlapList.remove(String.valueOf(bi.hashCode())+String.valueOf(bj.hashCode()))!=null;
                                         
                                         if(removePhysics || removeOverlap)
                                         {
@@ -239,14 +244,14 @@ public class CollisionSpace implements CollisionContext {
 				
 				if (newArb.getNumContacts() > 0)
 				{
-//					bi.collided(bj);
-//					bj.collided(bi);
 					
-                                        if (doOverlap){
-                                            if (!overlapList.contains(newArb)){
+                                        if (doOverlap)
+                                        {
+                                            if (!overlapList.containsKey(newArb.keyCode()))
+                                            {
                                                 Contact c = newArb.getContact(0);
                                                 notifyCollision(bi,bj,c.getPosition(),c.getNormal(),c.getSeparation());
-                                                overlapList.add(newArb);
+                                                overlapList.put(newArb.keyCode(),newArb);
                                             }
                                         }
                                         else if (doBitmask)
@@ -254,15 +259,17 @@ public class CollisionSpace implements CollisionContext {
                                             bi.collided(bj);
 					    bj.collided(bi);
                                         
-                                            if (arbiters.contains(newArb)) {
-                                                    int index = arbiters.indexOf(newArb);
-                                                    Arbiter arb = arbiters.get(index);
+                                            if (arbiters.containsKey(newArb.keyCode())) 
+                                            {
+                                                    Arbiter arb = arbiters.get(newArb.keyCode());
                                                     arb.update(newArb.getContacts(), newArb.getNumContacts());
-                                            } else {
+                                            } 
+                                            else 
+                                            {
                                                     Contact c = newArb.getContact(0);
 
                                                     notifyCollision(bi,bj,c.getPosition(),c.getNormal(),c.getSeparation());
-                                                    arbiters.add(newArb);
+                                                    arbiters.put(newArb.keyCode(),newArb);
                                                     newArb.init();
                                             }
                                         }
@@ -271,15 +278,15 @@ public class CollisionSpace implements CollisionContext {
 				}
 				else
 				{                                   
-                                        if (doOverlap && overlapList.contains(newArb))
+                                        if (doOverlap && overlapList.containsKey(newArb.keyCode()))
                                         {
-                                            overlapList.remove(newArb);
+                                            overlapList.remove(newArb.keyCode());
                                             notifySeparation(bi,bj);
                                         }
-                                        else if( doBitmask && arbiters.contains(newArb))
+                                        else if( doBitmask && arbiters.containsKey(newArb.keyCode()))
                                         {
-                                            arbiters.remove(newArb);
-                                            overlapList.remove(newArb);
+                                            arbiters.remove(newArb.keyCode());
+                                            overlapList.remove(newArb.keyCode());
                                             notifySeparation(bi,bj);
                                         }                                
                                         
