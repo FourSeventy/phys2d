@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import net.phys2d.math.ROVector2f;
+import net.phys2d.math.Vector2f;
 
 /**
  * A space that will resolve collisions and report them to registered 
@@ -280,8 +281,27 @@ public class CollisionSpace implements CollisionContext {
 				{                                   
                                         if (doOverlap && overlapList.containsKey(newArb.keyCode()))
                                         {
-                                            overlapList.remove(newArb.keyCode());
-                                            notifySeparation(bi,bj);
+                                            
+                                          //check if the smaller shape is inside the bigger one
+                                            Body smaller, bigger;
+                                            if((bi.getShape().getBounds().getHeight() * bi.getShape().getBounds().getWidth()) > (bj.getShape().getBounds().getHeight() * bj.getShape().getBounds().getWidth()))
+                                            {
+                                                bigger = bi;
+                                                smaller = bj;
+                                            }
+                                            else
+                                            {
+                                                bigger = bj;
+                                                smaller = bi;
+                                            }
+                                            
+                                            if(!bigger.getShape().contains(new Vector2f(smaller.getPosition()), bigger.getPosition(), bigger.getRotation()))
+                                            {                        
+                                                overlapList.remove(newArb.keyCode());
+                                                notifySeparation(bi,bj);
+                                            }
+                                           
+                                            
                                         }
                                         else if( doBitmask && arbiters.containsKey(newArb.keyCode()))
                                         {
