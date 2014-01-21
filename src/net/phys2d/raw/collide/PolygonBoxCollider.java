@@ -37,6 +37,7 @@
  */
 package net.phys2d.raw.collide;
 
+import java.util.Iterator;
 import net.phys2d.math.Vector2f;
 import net.phys2d.raw.Body;
 import net.phys2d.raw.Contact;
@@ -73,7 +74,7 @@ public class PolygonBoxCollider extends PolygonPolygonCollider {
 		sweep.addVerticesToSweep(true, vertsA);
 		sweep.addVerticesToSweep(false, vertsB);
 
-		int[][] collEdgeCands = sweep.getOverlappingEdges();
+		Iterator<EdgeSweep.EdgePairs.EdgePair> collEdgeCands = sweep.getOverlappingEdges();
 //		FeaturePair[] featurePairs = getFeaturePairs(contacts.length, vertsA, vertsB, collEdgeCands);
 //		return populateContacts(contacts, vertsA, vertsB, featurePairs);
 		

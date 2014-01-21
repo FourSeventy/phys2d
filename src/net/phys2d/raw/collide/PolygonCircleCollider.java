@@ -37,6 +37,7 @@
  */
 package net.phys2d.raw.collide;
 
+import java.util.Iterator;
 import net.phys2d.math.ROVector2f;
 import net.phys2d.math.Vector2f;
 import net.phys2d.raw.Body;
@@ -67,15 +68,18 @@ public class PolygonCircleCollider extends PolygonPolygonCollider {
 		centroidA.add(bodyA.getPosition());
 
 		
-		int[][] collPairs = getCollisionCandidates(vertsA, centroidA, circle.getRadius(), bodyB.getPosition());
+		Iterator<EdgeSweep.EdgePairs.EdgePair> collPairs = getCollisionCandidates(vertsA, centroidA, circle.getRadius(), bodyB.getPosition());
 
 		int noContacts = 0;
-		for ( int i = 0; i < collPairs.length; i++ ) {
+		while (collPairs.hasNext())
+                {
+                   EdgeSweep.EdgePairs.EdgePair pair = collPairs.next();
+                   
 			if ( noContacts >= contacts.length )
 				return contacts.length;
 			
-			Vector2f lineStartA = vertsA[collPairs[i][0]];
-			Vector2f lineEndA = vertsA[(collPairs[i][0]+1) % vertsA.length ];
+			Vector2f lineStartA = vertsA[pair.a];
+			Vector2f lineEndA = vertsA[(pair.a+1) % vertsA.length ];
 			Line line = new Line(lineStartA, lineEndA);
 						
 			float dis2 = line.distanceSquared(bodyB.getPosition());
@@ -112,7 +116,7 @@ public class PolygonCircleCollider extends PolygonPolygonCollider {
 	 * @param circlePos The position (center) of the circle
 	 * @return The list of edges that can collide with the circle
 	 */
-	protected int[][] getCollisionCandidates(Vector2f[] vertsA, ROVector2f centroid, float radius, ROVector2f circlePos) {
+	protected Iterator<EdgeSweep.EdgePairs.EdgePair> getCollisionCandidates(Vector2f[] vertsA, ROVector2f centroid, float radius, ROVector2f circlePos) {
 		Vector2f sweepDir = new Vector2f(centroid);
 		sweepDir.sub(circlePos);
 		sweepDir.normalise(); //TODO: this normalization might not be necessary

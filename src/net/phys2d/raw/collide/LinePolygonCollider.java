@@ -37,6 +37,7 @@
  */
 package net.phys2d.raw.collide;
 
+import java.util.Iterator;
 import net.phys2d.math.MathUtil;
 import net.phys2d.math.Vector2f;
 import net.phys2d.raw.Body;
@@ -87,11 +88,14 @@ public class LinePolygonCollider  extends PolygonPolygonCollider {
 		sweep.insert(0, true, vertsA[0].dot(normal));
 		sweep.insert(0, true, vertsA[1].dot(normal));
 		sweep.addVerticesToSweep(false, vertsB);
-		int[][] collEdgeCands = sweep.getOverlappingEdges(); 
+		Iterator<EdgeSweep.EdgePairs.EdgePair> collEdgeCands = sweep.getOverlappingEdges(); 
 		
 		IntersectionGatherer intGath = new IntersectionGatherer(vertsA, vertsB);
-		for ( int i = 0; i < collEdgeCands.length; i++ )
-			intGath.intersect(collEdgeCands[i][0], collEdgeCands[i][1]);
+		while (collEdgeCands.hasNext())
+                {
+                    EdgeSweep.EdgePairs.EdgePair pair = collEdgeCands.next();
+                    intGath.intersect(pair.a, pair.b);
+                }
 		
 		Intersection[] intersections = intGath.getIntersections();
 		

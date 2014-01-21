@@ -43,6 +43,8 @@ import net.phys2d.raw.Body;
 import net.phys2d.raw.Contact;
 import net.phys2d.raw.shapes.Polygon;
 
+import java.util.Iterator;
+
 /**
  * Collision detection functions for colliding two polygons.
  * 
@@ -65,7 +67,8 @@ public class PolygonPolygonCollider implements Collider {
 		Vector2f centroidB = new Vector2f(polyB.getCentroid());
 		centroidB.add(bodyB.getPosition());
 		
-		int[][] collEdgeCands = getCollisionCandidates(vertsA, vertsB, centroidA, centroidB);
+		Iterator<EdgeSweep.EdgePairs.EdgePair> collEdgeCands = getCollisionCandidates(
+              vertsA, vertsB, centroidA, centroidB);
 		Intersection[][] intersections = getIntersectionPairs(vertsA, vertsB, collEdgeCands);		
 		return populateContacts(contacts, vertsA, vertsB, intersections);
 	}
@@ -84,16 +87,19 @@ public class PolygonPolygonCollider implements Collider {
 	 * @return The points where the two polygons overlap, with for each overlapping
 	 * area the ingoing and outgoing edges in feature pairs.
 	 */
-	public Intersection[][] getIntersectionPairs(Vector2f[] vertsA, Vector2f[] vertsB, int[][] collEdgeCands) {
-		if ( collEdgeCands.length == 0 )
+	public Intersection[][] getIntersectionPairs(Vector2f[] vertsA, Vector2f[] vertsB, Iterator<EdgeSweep.EdgePairs.EdgePair> collEdgeCands) 
+        {
+		if ( !collEdgeCands.hasNext() )
 			return new Intersection[0][2];
 		
 		IntersectionGatherer fpl = new IntersectionGatherer(vertsA, vertsB);
-		
-		for ( int i = 0; i < collEdgeCands.length; i++ ) {
-			fpl.intersect(collEdgeCands[i][0], collEdgeCands[i][1]);
-		}
-		
+
+            while (collEdgeCands.hasNext())
+            {
+               EdgeSweep.EdgePairs.EdgePair pair = collEdgeCands.next();
+               fpl.intersect(pair.a, pair.b);
+            }
+
 		return fpl.getIntersectionPairs();
 	}
 	
@@ -221,7 +227,8 @@ public class PolygonPolygonCollider implements Collider {
 	 * the edge between vertsA[r[x][0]] and vertsA[r[x][0] + 1]
 	 * overlaps with vertsB[r[x][1]] and vertsB[r[x][1] + 1].
 	 */
-	public int[][] getCollisionCandidates(EdgeSweep sweep, Vector2f[] vertsA, Vector2f[] vertsB) {
+	public Iterator<EdgeSweep.EdgePairs.EdgePair> getCollisionCandidates(
+           EdgeSweep sweep, Vector2f[] vertsA, Vector2f[] vertsB) {
 		sweep.addVerticesToSweep(true, vertsA);
 		sweep.addVerticesToSweep(false, vertsB);
 
@@ -248,7 +255,8 @@ public class PolygonPolygonCollider implements Collider {
 	 * the edge between vertsA[r[x][0]] and vertsA[r[x][0] + 1]
 	 * overlaps with vertsB[r[x][1]] and vertsB[r[x][1] + 1].
 	 */
-	public int[][] getCollisionCandidates(Vector2f[] vertsA, Vector2f[] vertsB, Vector2f sweepDirStart, Vector2f sweepDirEnd) {
+	public Iterator<EdgeSweep.EdgePairs.EdgePair> getCollisionCandidates(
+           Vector2f[] vertsA, Vector2f[] vertsB, Vector2f sweepDirStart, Vector2f sweepDirEnd) {
 		Vector2f sweepDir = new Vector2f(sweepDirEnd);
 		sweepDir.sub(sweepDirStart);
 		

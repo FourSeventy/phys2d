@@ -178,7 +178,8 @@ public class CollisionSpace implements CollisionContext {
 	/**
 	 * @see net.phys2d.raw.CollisionContext#resolve(net.phys2d.raw.BodyList, float)
 	 */
-	public void resolve(BodyList bodyList, float dt) {
+	public void resolve(BodyList bodyList, float dt) 
+        {
 		for (int i = 0; i < bodyList.size(); ++i)
 		{
 			Body bi = bodyList.get(i);

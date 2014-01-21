@@ -37,6 +37,7 @@
  */
 package net.phys2d.raw.collide;
 
+import java.util.Iterator;
 import net.phys2d.math.ROVector2f;
 import net.phys2d.math.Vector2f;
 
@@ -240,9 +241,9 @@ public class EdgeSweep {
 	 * @return The numbers of the overlapping edges. The array will always have
 	 * dimension [n][2], where [i][0] is the edge of polygon A and [i][1] of B.
 	 */
-	public int[][] getOverlappingEdges() {
+	public Iterator<EdgePairs.EdgePair> getOverlappingEdges() {
 		if ( current == null )
-			return new int[0][2];
+			return new EdgePairs().iterator();
 		
 		goToStart();
 		
@@ -286,7 +287,7 @@ public class EdgeSweep {
 			current = current.next;
 		}
 		
-		return collidingEdges.toList();
+		return collidingEdges.iterator();
 	}
 	
 	/** The list of edges that are touched by the sweepline at a given time. 
@@ -449,7 +450,7 @@ public class EdgeSweep {
 	}
 	
 	/** The list of collision candidates in a linked list */
-	private class EdgePairs {
+	public class EdgePairs implements Iterable<EdgePairs.EdgePair>{
 		/** The first element of the list of collision candidates */ 
 		private EdgePair first;
 		/** The total number of collision candidates */
@@ -508,7 +509,45 @@ public class EdgeSweep {
 				this.next = next;
 			}
 		}
+                
+                private class EdgePairsIterator implements Iterator<EdgePair>
+                {
+         private EdgePair current;
+
+         @Override
+         public boolean hasNext()
+         {
+            if (current != null)
+            {
+               return current.next != null;
+            }
+
+            return first != null;
+         }
+
+         @Override
+         public EdgePair next()
+         {
+            current = current == null ? first : current.next;
+            return current;
+         }
+
+         @Override
+         public void remove()
+         {
+            throw new RuntimeException("Method not supported!");
+         }
+      }
+                
+                @Override
+                public Iterator<EdgePair> iterator()
+                {
+                   return new EdgePairsIterator();
+                 }
 	}
+        
+        
+
 	
 	/**
 	 * Insert a list of edges
