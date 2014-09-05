@@ -85,6 +85,7 @@ public class CollisionSpace implements CollisionContext {
 	public void add(Body body) {
 		body.setAdded(true);
 		bodies.add(body);
+                body.setCollisionSpace(this); 
 	}
 	
 	/**

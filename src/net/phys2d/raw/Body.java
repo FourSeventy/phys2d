@@ -57,6 +57,11 @@ public strictfp class Body {
 	private static int NEXT_ID = 0;
 	/** The maximum value indicating that body won't move */
 	public static final float INFINITE_MASS = Float.MAX_VALUE;
+        
+        /**
+         * CollisionSpace this body belongs to.
+         */
+        private CollisionSpace collisionSpace;
 	
         public ArrayList interpolators = new ArrayList();
         
@@ -175,6 +180,12 @@ public strictfp class Body {
          *  after the application of a regular force, this force will be applied.
          */
         private Vector2f softMaxVelocity;
+        
+        /**
+         * If this flag is set, this body will propogate any friction changes to its arbiters.
+         */
+        private boolean mutableFriction = false;
+        
         
 	/**
 	 * Create a new un-named body
@@ -793,6 +804,19 @@ public strictfp class Body {
 	 */
 	public void setFriction(float friction) {
 		this.surfaceFriction = friction;
+                
+                //if mutable friction, recalculate all arbiter frictions
+                if(this.mutableFriction && this.collisionSpace != null)
+                {
+                    for(Arbiter arbiter: this.collisionSpace.arbiters.values())
+                    {
+                        if(arbiter.concerns(this))
+                        {
+                            //recalculate the arbiter friction
+                            arbiter.init();
+                        }
+                    }
+                }
 	}
 	
 	/**
@@ -1444,5 +1468,15 @@ public strictfp class Body {
             }
             else if (yLast > softMaxVelocity.y && yCurrent > softMaxVelocity.y) //We were already ahead to begin with.
                 this.velocity.y = lastVelocity.y;
+        }
+        
+        public void setMutableFriction(boolean value)
+        {
+            this.mutableFriction = value;
+        }
+        
+        public void setCollisionSpace(CollisionSpace space)
+        {
+            this.collisionSpace = space;
         }
 }
