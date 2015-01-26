@@ -81,11 +81,15 @@ public class QuadSpaceStrategy implements BroadCollisionStrategy {
 		
 		for (int i=0;i<bodies.size();i++) {
 			Body body = bodies.get(i);
+                        
+                        if(!body.disabled())
+                        {
 			
-			space.addAABox(body.getShape().getBounds(), 
-						   body.getPosition().getX(), 
-						   body.getPosition().getY());
-			space.addBody(body);
+                            space.addAABox(body.getShape().getBounds(), 
+                                                       body.getPosition().getX(), 
+                                                       body.getPosition().getY());
+                            space.addBody(body);
+                        }
 		}
 		
 		splitSpace(space, 0, maxInSpace, spaces);
