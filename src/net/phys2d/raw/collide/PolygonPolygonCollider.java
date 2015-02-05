@@ -196,8 +196,7 @@ public class PolygonPolygonCollider implements Collider {
 		
 		float separation = -PenetrationSweep.getPenetrationDepth(in, out, normal, vertsA, vertsB);
 		// divided by 2 because there are two contact points
-		// divided by 2 (again) because both objects move (I think)
-		separation /= 4; 
+		separation /= 2; 
 		
 		contact1.setSeparation(separation);
 		contact1.setNormal(normal);
