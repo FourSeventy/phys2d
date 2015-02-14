@@ -290,18 +290,15 @@ public strictfp class Arbiter {
 			Vector2f impulse = MathUtil.scale(c.normal, c.accumulatedNormalImpulse);
 			impulse.add(MathUtil.scale(tangent, c.accumulatedTangentImpulse));
 			
-                        //mike player impulse hack
-                        if(body2.getBitmask() != 0b0_0000_0000_0001)
-                        {
-                            body1.adjustVelocity(MathUtil.scale(impulse, -body1.getInvMass()));
-                            body1.adjustAngularVelocity(-body1.getInvI() * MathUtil.cross(r1, impulse));
-                        }
                         
-                        if(body1.getBitmask() != 0b0_0000_0000_0001)
-                        {
-                            body2.adjustVelocity(MathUtil.scale(impulse, body2.getInvMass()));
-                            body2.adjustAngularVelocity(body2.getInvI() * MathUtil.cross(r2, impulse));
-                        }
+                        body1.adjustVelocity(MathUtil.scale(impulse, -body1.getInvMass()));
+                        body1.adjustAngularVelocity(-body1.getInvI() * MathUtil.cross(r1, impulse));
+
+
+
+                        body2.adjustVelocity(MathUtil.scale(impulse, body2.getInvMass()));
+                        body2.adjustAngularVelocity(body2.getInvI() * MathUtil.cross(r2, impulse));
+                        
 			// rest bias
 			c.biasImpulse = 0;
 		}
@@ -351,22 +348,18 @@ public strictfp class Arbiter {
                 scaleTemp.set(impulse);
                 scaleTemp.scale(-b1.getInvMass()); 
           
-                //mike player impulse hack
-                if(b2.getBitmask() != 0b0_0000_0000_0001)
-                {
-                    b1.adjustVelocity(scaleTemp);
-                    b1.adjustAngularVelocity(-(b1.getInvI() * MathUtil.cross(r1, impulse)));
-                }
+                
+                b1.adjustVelocity(scaleTemp);
+                b1.adjustAngularVelocity(-(b1.getInvI() * MathUtil.cross(r1, impulse)));
+                
 
                 scaleTemp.set(impulse);
                 scaleTemp.scale(b2.getInvMass()); 
                        
-                //mike player impulse hack
-                if(b1.getBitmask() != 0b0_0000_0000_0001)
-                {
-                    b2.adjustVelocity(scaleTemp);
-                    b2.adjustAngularVelocity(b2.getInvI() * MathUtil.cross(r2, impulse));
-                }
+                
+                b2.adjustVelocity(scaleTemp);
+                b2.adjustAngularVelocity(b2.getInvI() * MathUtil.cross(r2, impulse));
+                
 
                 // Compute bias impulse
                 // NEW STUFF FOR SEPERATING BIAS
@@ -386,21 +379,17 @@ public strictfp class Arbiter {
                 scaleTemp.set(Pb);
                 scaleTemp.scale(-b1.getInvMass()); 
                 
-                //mike player impulse hack
-                if(b2.getBitmask() != 0b0_0000_0000_0001)
-                {
-                    b1.adjustBiasedVelocity(scaleTemp);
-                    b1.adjustBiasedAngularVelocity(-(b1.getInvI() * MathUtil.cross(r1, Pb)));
-                }
+                
+                b1.adjustBiasedVelocity(scaleTemp);
+                b1.adjustBiasedAngularVelocity(-(b1.getInvI() * MathUtil.cross(r1, Pb)));
+                
                 scaleTemp.set(Pb);
                 scaleTemp.scale(b2.getInvMass()); 
                 
-                //mike player impulse hack
-                if(b1.getBitmask() != 0b0_0000_0000_0001)
-                {
-                    b2.adjustBiasedVelocity(scaleTemp);
-                    b2.adjustBiasedAngularVelocity((b2.getInvI() * MathUtil.cross(r2, Pb)));
-                }
+               
+                b2.adjustBiasedVelocity(scaleTemp);
+                b2.adjustBiasedAngularVelocity((b2.getInvI() * MathUtil.cross(r2, Pb)));
+                
 
                 // END NEW STUFF
 
@@ -430,22 +419,18 @@ public strictfp class Arbiter {
                 scaleTemp.set(impulse);
                 scaleTemp.scale(-b1.getInvMass());
 
-                //mike player impulse hack
-                if(b2.getBitmask() != 0b0_0000_0000_0001)
-                {
-                    b1.adjustVelocity(scaleTemp);
-                    b1.adjustAngularVelocity(-b1.getInvI() * MathUtil.cross(r1, impulse));
-                }
+                
+                b1.adjustVelocity(scaleTemp);
+                b1.adjustAngularVelocity(-b1.getInvI() * MathUtil.cross(r1, impulse));
+                
                 
                 scaleTemp.set(impulse);
                 scaleTemp.scale(b2.getInvMass());
 
-                //mike player impulse hack
-                if(b1.getBitmask() != 0b0_0000_0000_0001)
-                {
-                    b2.adjustVelocity(scaleTemp);
-                    b2.adjustAngularVelocity(b2.getInvI() * MathUtil.cross(r2, impulse));
-                }
+                
+                b2.adjustVelocity(scaleTemp);
+                b2.adjustAngularVelocity(b2.getInvI() * MathUtil.cross(r2, impulse));
+                
             }
 
 	}
